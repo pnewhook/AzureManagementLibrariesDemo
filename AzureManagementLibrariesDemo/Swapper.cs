@@ -6,27 +6,36 @@ using Microsoft.WindowsAzure.Management.Compute;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.WindowsAzure.Management.Compute.Models;
+using Microsoft.WindowsAzure.Management.WebSites;
+using Microsoft.WindowsAzure.Management.WebSites.Models;
 
-namespace AzurePro.Core
+namespace AzuremanagementLibrariesDemo
 {
 	public class Swapper
 	{
-		ComputeManagementClient _client;
-
+		SubscriptionCloudCredentials _credentials;
 		public Swapper ()
 		{
 			string certBase64String = ConfigurationManager.AppSettings["certificate"];
 			var cert = new X509Certificate2(Convert.FromBase64String(certBase64String));
 			string subscriptionId = ConfigurationManager.AppSettings["subscriptionId"];
-			SubscriptionCloudCredentials credentials = new CertificateCloudCredentials(subscriptionId, cert);
-			_client = CloudContext.Clients.CreateComputeManagementClient(credentials);
+			_credentials = new CertificateCloudCredentials(subscriptionId, cert);
+
 		}
 
-		public async Task SwapCloudService(string siteName)
+		public async Task SwapCloudServiceAsync(string serviceName)
 		{
-			var detailed = await _client.HostedServices.GetDetailedAsync(siteName);
+			ComputeManagementClient client = CloudContext.Clients.CreateComputeManagementClient(_credentials);
+			var detailed = await client.HostedServices.GetDetailedAsync(serviceName);
 			string stagingName = detailed.Deployments.Single(d => d.DeploymentSlot == DeploymentSlot.Staging).Name;
-			_client.Deployments.SwapAsync(siteName, new DeploymentSwapParameters{ SourceDeployment = stagingName });
+			await client.Deployments.SwapAsync(serviceName, new DeploymentSwapParameters{ SourceDeployment = stagingName });
+		}
+
+		public async Task SwapWebSiteAsync(string siteName, string sourceSite, string targetSlot)
+		{
+			WebSiteManagementClient client =  CloudContext.Clients.CreateWebSiteManagementClient(_credentials);
+			// the management library is very fond of static string constants
+			await client.WebSites.SwapSlotsAsync(WebSpaceNames.EastUSWebSpace, siteName, sourceSite, targetSlot);
 		}
 	}
 }

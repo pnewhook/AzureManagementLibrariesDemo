@@ -1,4 +1,7 @@
 ﻿using System;
+using Nito.AsyncEx;
+using AzuremanagementLibrariesDemo;
+
 
 namespace AzureManagementLibrariesDemo
 {
@@ -6,7 +9,8 @@ namespace AzureManagementLibrariesDemo
 	{
 		public static void Main(string[] args)
 		{
-			Console.WriteLine("Hello World!");
+			var swapper = new Swapper();
+			return AsyncContext.Run(() => swapper.SwapWebSiteAsync("swap-test", "swap-test-staging", "swap-test"));
 		}
 	}
 }
