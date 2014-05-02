@@ -10,7 +10,7 @@ namespace AzureManagementLibrariesDemo
 		public static void Main(string[] args)
 		{
 			var swapper = new Swapper();
-			return AsyncContext.Run(() => swapper.SwapWebSiteAsync("swap-test", "swap-test-staging", "swap-test"));
+			AsyncContext.Run(() => swapper.SwapWebSiteAsync("swap-test", "swap-test-staging", "swap-test"));
 		}
 	}
 }
